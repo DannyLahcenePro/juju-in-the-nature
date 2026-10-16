@@ -29,10 +29,17 @@
   body.touch #hud>span:first-child>span:first-child,body.touch #keys{display:none}
   body.touch #toast{top:calc(48px + env(safe-area-inset-top, 0px))}
   body.touch #hint{bottom:calc(170px + env(safe-area-inset-bottom, 0px))}
+  [hidden]{display:none!important}
   #toast{position:fixed;top:7%;left:0;right:0;text-align:center;color:#fff;font-size:clamp(22px,4vw,44px);text-shadow:0 2px 0 #2a3a30,0 0 14px rgba(0,0,0,.4);opacity:0;transition:opacity 1.5s;pointer-events:none}
   #hud{position:fixed;bottom:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;color:#fff;font-size:14px;text-shadow:0 1px 1px rgba(0,0,0,.6);pointer-events:none}
   #hud>span{background:rgba(30,40,36,.28);border-radius:6px;padding:2px 8px}
   #hud>span:empty{display:none}
+  .kc{display:inline-block;min-width:1.4em;text-align:center;font-weight:400;font-size:12px;line-height:1.35;padding:0 4px;margin:0 1px 0 6px;border:1px solid rgba(255,255,255,.6);border-bottom-width:2px;border-radius:4px;background:rgba(255,255,255,.1)}
+  .legend .kc:first-child{margin-left:0}
+  .hudr{display:flex;gap:12px;align-items:center}
+  #hud>.hudr{background:none;border:0;padding:0}
+  #nightB,#mute{pointer-events:auto;cursor:pointer;background:rgba(30,40,36,.28);border-radius:6px;padding:2px 8px}
+  body.touch .legend{display:none}
   #mute{pointer-events:auto;cursor:pointer}
   #hint{position:fixed;bottom:12%;left:50%;transform:translateX(-50%);text-align:center;color:#fff;font-size:16px;text-shadow:0 1px 1px rgba(0,0,0,.6);background:rgba(30,40,36,.28);border-radius:6px;padding:2px 10px;opacity:0;transition:opacity .4s;pointer-events:none}
   #view{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(20,24,22,.78);opacity:0;pointer-events:none;transition:opacity .8s;cursor:pointer}
@@ -50,6 +57,20 @@
   #col{position:fixed;inset:0;z-index:4;background:rgba(18,22,20,.9);opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;padding:20px 16px;box-sizing:border-box;color:#fff}
   #col.on{opacity:1;pointer-events:auto}
   #col h2{margin:4px 0 4px;text-align:center;font-size:clamp(22px,4vw,38px);text-shadow:0 2px 0 #000}
+  #col{padding-top:0}
+  .colbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1200px;margin:0 auto 6px;padding:calc(12px + env(safe-area-inset-top, 0px)) 0 10px;background:rgba(18,22,20,.96)}
+  .colbar h2{margin:0}
+  #colX{font:inherit;font-size:16px;color:#fff;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.5);border-radius:20px;padding:6px 16px;cursor:pointer}
+  #colX:hover{background:rgba(255,255,255,.18)}#colX:focus-visible,.zone summary:focus-visible{outline:2px solid #ffe27a;outline-offset:2px}
+  .zone{max-width:1200px;margin:0 auto 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.03)}
+  .zone summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:18px}
+  .zone summary::-webkit-details-marker{display:none}
+  .zone summary::before{content:'▸';transition:transform .2s;opacity:.7}.zone[open] summary::before{transform:rotate(90deg)}
+  .zone .zn{flex:1}.zone .zc{opacity:.8;font-variant-numeric:tabular-nums;font-size:15px}
+  .zbar{width:70px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden}.zbar i{display:block;height:100%;background:#ffe27a}
+  .zgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 16px 16px}
+  .ghint{margin:0 16px 12px;opacity:.75;font-size:14px}
+  #ggrid{padding:0 16px 16px}
   #col .sub{text-align:center;opacity:.8;margin-bottom:16px}
   #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;max-width:1200px;margin:0 auto}
   .card{position:relative;aspect-ratio:16/9;border:4px solid #7a4e2a;outline:2px solid #c8945a;background:#20262a;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -69,14 +90,17 @@
 <div id="photo"><img id="pimg" alt="Photo of Juju in the nature"><p>Right-click or long-press the photo to save it</p><button id="pdl" type="button">Download</button><small>click anywhere to keep walking</small></div><div id="flash" style="position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9"></div>
 <div id="hint">★ press E (or click) on the sign the sign to enjoy the view</div>
 <div id="view"><canvas id="vc" width="192" height="108"></canvas><p id="vcap"></p><small>click or press Esc to keep walking</small></div>
-<div id="col"><h2>Collection</h2><div class="sub" id="colsub"></div><div id="grid"></div><h2 style="margin-top:26px">Gifts</h2><div class="sub" id="gsub"></div><div id="ggrid"></div><div class="sub" style="margin-top:16px">C or Esc to close</div></div>
+<div id="col"><div class="colbar"><h2>Collection</h2><button id="colX" type="button">✕ Close</button></div>
+<div class="sub" id="colsub"></div><div id="zones"></div>
+<details class="zone" id="gdet"><summary><span class="zn">Gifts</span><span class="zc" id="gsub"></span><span class="zbar"><i id="gbar"></i></span></summary><p class="ghint">Open the pink boxes. Tap a gift to wear or hide it.</p><div id="ggrid"></div></details></div>
 <div id="pad" hidden><div id="stick"><div id="knob"></div></div>
   <div id="btns">
     <div class="row"><button type="button" data-k="b" data-g="dog" hidden>Waf</button><button type="button" data-k="h" data-g="choco" hidden>Choco</button><button type="button" data-k="p" data-g="camera" hidden>Photo</button><button type="button" data-k="u" data-g="uke" hidden>Uke</button></div>
-    <div class="row"><button type="button" data-k="c">Collection</button><button type="button" id="bView" data-k="e" hidden>★ View</button></div>
+    <div class="row"><button type="button" id="bView" data-k="e" hidden>★ View</button></div>
+    <div class="row"><button type="button" id="bNight" data-k="n">🌙</button><button type="button" data-k="c">Collection</button></div>
     <div class="row"><button type="button" id="bRun">Run</button><button type="button" class="big" data-k=" ">Jump</button></div>
   </div></div>
-<div id="hud"><span><span>WASD / ZQSD / arrows / hold mouse to walk · Shift run · Space jump &nbsp;·&nbsp; </span><span id="cnt">viewspots found: 0/24</span> &nbsp;·&nbsp; C : collection</span><span id="keys"></span><span id="mute">♪ M : sound on</span></div>
+<div id="hud"><span><span class="legend"><b class="kc">WASD</b> move <b class="kc">Shift</b> run <b class="kc">Space</b> jump <b class="kc">E</b> view <b class="kc">C</b> collection &nbsp;·&nbsp; </span><span id="cnt">viewspots found: 0/48</span></span><span id="keys"></span><span class="hudr"><span id="nightB"></span><span id="mute"><b class="kc">M</b> ♪ on</span></span></div>
 <div id="start">
   <h1>Juju in the Nature</h1>
   <p>Walk, and the world grows around you.<br>↑ forest &nbsp;·&nbsp; → meadow &nbsp;·&nbsp; ↓ lake &nbsp;·&nbsp; ← sakura</p>
@@ -87,8 +111,8 @@
 const cv=document.getElementById('c'),g=cv.getContext('2d');
 let W=480,H=270,PX=4;
 /* ---------- touch controls ---------- */
-const isTouch=matchMedia('(pointer: coarse)').matches||'ontouchstart' in window;const joy={on:false,x:0,y:0,id:null};
-function initTouch(){if(!isTouch)return;document.body.classList.add('touch');document.getElementById('pad').hidden=false;
+let isTouch=matchMedia('(hover: none) and (pointer: coarse)').matches;const joy={on:false,x:0,y:0,id:null};
+function initTouch(){if(!isTouch){addEventListener('touchstart',()=>{if(!isTouch){isTouch=true;initTouch();}},{once:true,passive:true});return;}document.body.classList.add('touch');document.getElementById('pad').hidden=false;
   const st=document.getElementById('stick'),kn=document.getElementById('knob');
   const mv=e=>{const r=st.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,R=r.width/2;let x=e.clientX-cx,y=e.clientY-cy;const l=Math.hypot(x,y);if(l>R){x*=R/l;y*=R/l;}
     joy.x=x/R;joy.y=y/R;kn.style.transform='translate('+x+'px,'+y+'px)';};
@@ -350,7 +374,8 @@ function getT(x,y){const k=K(x,y);let t=T.get(k);if(!t){t=genTile(x,y);T.set(k,t
 
 /* ---------- state ---------- */
 const P={x:0,y:0,z:0,jh:0,jv:0,face:'front',walk:0,moving:false};
-const cam={x:0,y:0};let wts=[0,1,0,0,0,0,0,0],biomeNow=-1,started=false,now=0,last=0;
+const cam={x:0,y:0};let night=false,nightT=0;try{night=localStorage.getItem('juju_night')==='1';nightT=night?1:0;}catch(e){}
+let wts=[0,1,0,0,0,0,0,0],biomeNow=-1,started=false,now=0,last=0;
 const keys={},ptr={down:false,x:0,y:0};const parts=[];
 let viewing=false,colOpen=false,nearSpot=null;
 const GIFTS=[
@@ -372,8 +397,8 @@ function collectGift(t){t.o=null;t.gift=0;const miss=GIFTS.filter(G=>!gifts.has(
   toast('🎁 '+G.name+' ! ('+gifts.size+'/'+GIFTS.length+')');
   for(let i=0;i<24;i++)parts.push({x:cam.x+(Math.random()-.5)*20,y:cam.y-10+(Math.random()-.5)*14,vx:(Math.random()-.5)*40,vy:-20-Math.random()*30,life:1.4,max:1.4,col:pick(['#ffe27a','#ff9ab8','#fff'],Math.random()),k:'spark'});
   if(AC&&!muted){const tt=AC.currentTime;[72,76,79,84,88].forEach((m,i)=>play('bell',buses[1],m,tt+i*.09));}}
-function updHud(){document.querySelectorAll('#btns [data-g]').forEach(b=>b.hidden=!has(b.dataset.g));const k=[];if(has('choco'))k.push('H : chocolate');if(has('camera'))k.push('P : photo');if(has('uke'))k.push('U : ukulele');if(has('dog'))k.push('B : waf');
-  document.getElementById('keys').textContent=k.join('  ·  ');}
+function updHud(){document.querySelectorAll('#btns [data-g]').forEach(b=>b.hidden=!has(b.dataset.g));const k=[];if(has('choco'))k.push('<b class="kc">H</b> chocolate');if(has('camera'))k.push('<b class="kc">P</b> photo');if(has('uke'))k.push('<b class="kc">U</b> ukulele');if(has('dog'))k.push('<b class="kc">B</b> waf');
+  document.getElementById('keys').innerHTML=k.join(' ');}
 function useKey(k){
   if(k==='h'&&has('choco')){toast('Yum! 🍫');for(let i=0;i<10;i++)parts.push({x:cam.x+(Math.random()-.5)*16,y:cam.y-14,vx:(Math.random()-.5)*16,vy:-18-Math.random()*12,life:1.6,max:1.6,col:'#ff5a7a',k:'heart'});}
   if(k==='p'&&has('camera'))photo();
@@ -395,6 +420,7 @@ const saveFound=()=>{try{localStorage.setItem('juju_collection',JSON.stringify([
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();
   if(viewing){if(k==='escape'||k==='e'||k===' '||k==='enter'){closeView();closePhoto();}return;}
   if(k==='c'&&started){toggleCol();return;}
+  if(k==='n'){toggleNight();return;}
   if(started&&!colOpen)useKey(k);
   if(colOpen){if(k==='escape')toggleCol();return;}
   keys[k]=true;if(!started)start();if(k==='m')toggleMute();if(k.startsWith('arrow')||k===' ')e.preventDefault();
@@ -409,8 +435,9 @@ cv.addEventListener('pointerdown',e=>{const mx=e.clientX/PX,my=e.clientY/PX;
   ptr.down=true;ptr.x=mx;ptr.y=my;});
 addEventListener('pointermove',e=>{ptr.x=e.clientX/PX;ptr.y=e.clientY/PX;});
 addEventListener('pointerup',()=>ptr.down=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false;ptr.down=false;});
-document.getElementById('start').addEventListener('click',start);setTimeout(()=>{initTouch();updCnt();updHud();},0);
+document.getElementById('start').addEventListener('click',start);setTimeout(()=>{initTouch();updCnt();updHud();updNightBtn();},0);
 document.getElementById('mute').addEventListener('click',toggleMute);
+document.getElementById('nightB').addEventListener('click',toggleNight);
 function start(){if(started)return;started=true;const s=document.getElementById('start');s.style.opacity=0;setTimeout(()=>s.remove(),1300);initAudio();}
 
 const walkable=(x,y)=>true; // she can wade through lakes, so any direction goes on forever
@@ -472,6 +499,8 @@ function update(dt){
   if(Math.random()<dt*14*wts[4])parts.push({x:vx0+Math.random()*W*1.2,y:vy0-5,vx:-6,vy:10+Math.random()*5,life:10,max:10,col:pick(['#d0601c','#e8963a','#b03a1a','#f2b040'],Math.random()),k:'petal',ph:Math.random()*6});
   if(Math.random()<dt*34*wts[5])parts.push({x:vx0+Math.random()*W*1.2,y:vy0-5+Math.random()*H*.3,vx:-4,vy:12+Math.random()*6,life:10,max:10,col:'#ffffff',k:'petal',ph:Math.random()*6});
   if(Math.random()<dt*12*wts[6])parts.push({x:vx0-10,y:vy0+Math.random()*H,vx:40+Math.random()*30,vy:(Math.random()-.5)*4,life:5,max:5,col:'rgba(240,210,160,.7)',k:'dust'});
+  nightT+=((night?1:0)-nightT)*Math.min(1,dt*1.5);
+  if(Math.random()<dt*18*nightT)parts.push({x:vx0+Math.random()*W,y:vy0+Math.random()*H,vx:(Math.random()-.5)*4,vy:-2-Math.random()*3,life:6,max:6,col:'#f8f08a',k:'mote',ph:Math.random()*6});
   if(Math.random()<dt*16*wts[7])parts.push({x:vx0+Math.random()*W,y:vy0+Math.random()*H,vx:(Math.random()-.5)*4,vy:-3-Math.random()*3,life:5,max:5,col:pick(['#9af4ff','#ffb0f4','#e0d0ff'],Math.random()),k:'mote',ph:Math.random()*6});
   if(parts.filter(p=>p.k==='bf').length<7*wts[1]&&Math.random()<dt*2)parts.push({x:vx0+Math.random()*W,y:vy0+Math.random()*H,vx:0,vy:0,life:14,max:14,col:pick(['#f6d34a','#ffffff','#f29ac0','#8fd0ff','#f6a04a'],Math.random()),k:'bf',ph:Math.random()*6});
   if(Math.random()<dt*30*wts[2]){const x=px+((Math.random()*18|0)-9),y=py+((Math.random()*18|0)-9),t=T.get(K(x,y));
@@ -524,12 +553,15 @@ function splashSnd(v){if(!AC||muted)return;const t=AC.currentTime,big=v>.08;
     o.type='sine';o.frequency.setValueAtTime(f0,tt);o.frequency.exponentialRampToValueAtTime(f0*2.3,tt+.07);
     og.gain.setValueAtTime(0,tt);og.gain.linearRampToValueAtTime(big?.05:.025,tt+.008);og.gain.exponentialRampToValueAtTime(.0001,tt+.1);
     o.connect(og);og.connect(master);o.start(tt);o.stop(tt+.12);}}
+let NC=null;
 function draw(){
   // background blended by biome
   const top=[0,0,0],bot=[0,0,0];wts.forEach((w,i)=>{const a=mixHex(BIOMES[i].bg[0],BIOMES[i].bg[0],0),b=mixHex(BIOMES[i].bg[1],BIOMES[i].bg[1],0);for(let j=0;j<3;j++){top[j]+=a[j]*w;bot[j]+=b[j]*w;}});
+  if(nightT>.001){const nt=[12,16,44],nb=[44,46,86];for(let j=0;j<3;j++){top[j]+=(nt[j]-top[j])*nightT;bot[j]+=(nb[j]-bot[j])*nightT;}}
   const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,rgb(top));bg.addColorStop(1,rgb(bot));g.fillStyle=bg;g.fillRect(0,0,W,H);
   // camera snapped to her rounded pixel position -> she never jitters against the world
-  const ox=Math.round(cam.x)-(W>>1),oy=Math.round(cam.y)-(H>>1);
+  if(nightT>.05){g.fillStyle='#fffbe8';for(let i=0;i<90;i++){const sx=(hash(i,1,77)*W*1.3+cam.x*.03)%W,sy=hash(i,2,77)*H*.75;g.globalAlpha=nightT*(.35+.65*Math.abs(Math.sin(now*.8+i)));g.fillRect(sx|0,sy|0,1,1);}g.globalAlpha=1;}
+  const ox=Math.round(cam.x)-(W>>1),oy=Math.round(cam.y)-(H>>1);const lights=[];
   const s0=Math.floor((oy-60)/8),s1=Math.ceil((oy+H+30+3*HZ)/8),d0=Math.floor((ox-20)/16)-1,d1=Math.ceil((ox+W+20)/16)+1;
   const prow=Math.round(P.x)+Math.round(P.y);let ghost=null;
   for(let s=s0;s<=s1;s++){const objs=[];
@@ -552,12 +584,20 @@ function draw(){
     const sp=o.t.o,a=clamp((now-o.t.rev-.25)/.6,0,1);if(a<=0)continue;const k=back(a);
     const sway=sp.c.height>30?Math.sin(now*1.3+o.t.seed*20)*.6:0;
     if(sp.glow){const gl=g.createRadialGradient(o.sx,o.sy-6,0,o.sx,o.sy-6,14);gl.addColorStop(0,sp.glow+(.22+.1*Math.sin(now*2+o.t.seed*9))+')');gl.addColorStop(1,sp.glow+'0)');g.fillStyle=gl;g.fillRect(o.sx-14,o.sy-20,28,28);}
+    if(o.t.spot||o.t.gift)lights.push(o.sx,o.sy-16,34);else if(sp===SP.lantern[0])lights.push(o.sx,o.sy-10,40);else if(sp.glow)lights.push(o.sx,o.sy-6,24);
     if(o.t.spot||o.t.gift){const gl=g.createRadialGradient(o.sx,o.sy-18,0,o.sx,o.sy-18,16);const pu=.25+.15*Math.sin(now*3);
       gl.addColorStop(0,`rgba(255,236,150,${pu})`);gl.addColorStop(1,'rgba(255,236,150,0)');g.fillStyle=gl;g.fillRect(o.sx-16,o.sy-34,32,32);}
     if(k>.98&&k<1.02)g.drawImage(sp.c,Math.round(o.sx-sp.ax+sway),o.sy-sp.ay+(o.t.spot||o.t.gift?Math.round(Math.sin(now*2)):0));
     else{const w=sp.c.width*k,h=sp.c.height*k;g.drawImage(sp.c,o.sx-sp.ax*k,o.sy-sp.ay*k,w,h);}
     if((o.t.spot||o.t.gift)&&Math.random()<.04)parts.push({x:o.sx+ox+(Math.random()-.5)*12,y:o.sy+oy-20+(Math.random()-.5)*10,vx:0,vy:-8,life:1,max:1,col:'#fff2b0',k:'spark'});}}
   if(wts[7]>.01){g.fillStyle=`rgba(20,12,60,${.3*wts[7]})`;g.fillRect(0,0,W,H);}
+  if(nightT>.01){if(!NC||NC.width!==W||NC.height!==H){NC=document.createElement('canvas');NC.width=W;NC.height=H;}const n=NC.getContext('2d');
+    n.globalCompositeOperation='source-over';n.clearRect(0,0,W,H);n.fillStyle=`rgba(10,14,46,${.66*nightT})`;n.fillRect(0,0,W,H);
+    n.globalCompositeOperation='destination-out';const L=lights.concat([W>>1,(H>>1)-10,58]);
+    for(let i=0;i<L.length;i+=3){const r=L[i+2]*(1+.04*Math.sin(now*3+i)),gr=n.createRadialGradient(L[i],L[i+1],0,L[i],L[i+1],r);gr.addColorStop(0,'rgba(0,0,0,.95)');gr.addColorStop(.55,'rgba(0,0,0,.45)');gr.addColorStop(1,'rgba(0,0,0,0)');n.fillStyle=gr;n.fillRect(L[i]-r,L[i+1]-r,r*2,r*2);}
+    g.drawImage(NC,0,0);
+    g.globalCompositeOperation='lighter';for(let i=0;i<lights.length;i+=3){const r=lights[i+2]*.7,gr=g.createRadialGradient(lights[i],lights[i+1],0,lights[i],lights[i+1],r);gr.addColorStop(0,`rgba(255,200,110,${.16*nightT})`);gr.addColorStop(1,'rgba(255,200,110,0)');g.fillStyle=gr;g.fillRect(lights[i]-r,lights[i+1]-r,r*2,r*2);}
+    g.globalCompositeOperation='source-over';}
   if(ghost){g.globalAlpha=.28;ghost();g.globalAlpha=1;}
   drawFollowers(ox,oy); // see-through silhouette when behind cliffs/trees
   // particles
@@ -605,7 +645,9 @@ function bed(bus,type,fr,q,gain,lr,ld){const s=AC.createBufferSource();s.buffer=
   const gn=AC.createGain();gn.gain.value=gain;const l=AC.createOscillator();l.frequency.value=lr;const lg=AC.createGain();lg.gain.value=ld;l.connect(lg);lg.connect(gn.gain);
   s.connect(f);f.connect(gn);gn.connect(bus);s.start();l.start();}
 function setBusGains(){if(!AC)return;const tg=wts.target||wts;buses.forEach((b,i)=>b.gain.setTargetAtTime(Math.pow(tg[i],1.7),AC.currentTime,.9));}
-function toggleMute(){muted=!muted;document.getElementById('mute').textContent=muted?'♪ M : sound off':'♪ M : sound on';if(AC)master.gain.setTargetAtTime(muted?0:.8,AC.currentTime,.3);}
+function toggleNight(){night=!night;try{localStorage.setItem('juju_night',night?'1':'0');}catch(e){}updNightBtn();toast(night?'🌙 Night':'☀ Day');}
+function updNightBtn(){const t=night?'☀ day':'🌙 night';document.getElementById('nightB').innerHTML='<b class="kc">N</b> '+t;const nb=document.getElementById('bNight');if(nb)nb.textContent=night?'☀':'🌙';}
+function toggleMute(){muted=!muted;document.getElementById('mute').innerHTML='<b class="kc">M</b> '+(muted?'♪ off':'♪ on');if(AC)master.gain.setTargetAtTime(muted?0:.8,AC.currentTime,.3);}
 function voice(dest,type,f,t,a,peak,dec,det=0){const o=AC.createOscillator(),gn=AC.createGain();o.type=type;o.frequency.value=f;o.detune.value=det;
   gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(peak,t+a);gn.gain.exponentialRampToValueAtTime(.0001,t+a+dec);o.connect(gn);gn.connect(dest);o.start(t);o.stop(t+a+dec+.1);return o;}
 function play(inst,bus,m,t){const f=mtof(m);
@@ -695,11 +737,15 @@ function showPainting(id){viewing=true;for(const k in keys)keys[k]=false;ptr.dow
   if(AC&&!muted){const tt=AC.currentTime;[72,76,79,84].forEach((m,i)=>play('bell',buses[b],m,tt+i*.18));}}
 function updCnt(){document.getElementById('cnt').textContent='viewspots found: '+found.size+'/'+NPAINT;}
 const thumbs={};
-function toggleCol(){colOpen=!colOpen;const el=document.getElementById('col');el.classList.toggle('on',colOpen);if(!colOpen)return;
+const openZones=new Set();
+function toggleCol(){colOpen=!colOpen;const el=document.getElementById('col');el.classList.toggle('on',colOpen);if(!colOpen)return;el.scrollTop=0;
   for(const k in keys)keys[k]=false;ptr.down=false;
   document.getElementById('colsub').textContent=found.size+' / '+NPAINT+' landscapes discovered — find the glowing ★ signs';
-  const gr=document.getElementById('grid');gr.innerHTML='';
-  for(let id=0;id<NPAINT;id++){const c=document.createElement('div'),b=id/6|0;
+  const zs=document.getElementById('zones');zs.innerHTML='';const grids=[];
+  for(let b=0;b<8;b++){let n=0;for(let i=0;i<6;i++)if(found.has(b*6+i))n++;const d=document.createElement('details');d.className='zone';d.open=openZones.has(b);
+    d.innerHTML='<summary><span class="zn">'+BIOMES[b].name+'</span><span class="zc">'+n+' / 6</span><span class="zbar"><i style="width:'+(n/6*100)+'%"></i></span></summary><div class="zgrid"></div>';
+    d.addEventListener('toggle',()=>{d.open?openZones.add(b):openZones.delete(b);});zs.appendChild(d);grids.push(d.querySelector('.zgrid'));}
+  for(let id=0;id<NPAINT;id++){const c=document.createElement('div'),b=id/6|0,gr=grids[b];
     if(found.has(id)){c.className='card';
       if(!thumbs[id]){const p=painting(id*7919+101,b),cv2=document.createElement('canvas');cv2.width=192;cv2.height=108;cv2.getContext('2d').putImageData(p.img,0,0);thumbs[id]={cv:cv2,cap:p.cap};}
       const cc=document.createElement('canvas');cc.width=192;cc.height=108;cc.getContext('2d').drawImage(thumbs[id].cv,0,0);c.appendChild(cc);
@@ -708,7 +754,7 @@ function toggleCol(){colOpen=!colOpen;const el=document.getElementById('col');el
     else{c.className='card locked';c.innerHTML='<span class="q">?</span><div class="lbl">#'+(id+1)+' · '+ZN[b]+' · locked</div>';}
     gr.appendChild(c);}
   renderGifts();}
-function renderGifts(){document.getElementById('gsub').textContent=gifts.size+' / '+GIFTS.length+' gifts — open the pink boxes · click a gift to wear / hide it';
+function renderGifts(){document.getElementById('gsub').textContent=gifts.size+' / '+GIFTS.length;document.getElementById('gbar').style.width=(gifts.size/GIFTS.length*100)+'%';
   const gg=document.getElementById('ggrid');gg.innerHTML='';
   GIFTS.forEach(G=>{const c=document.createElement('div');
     if(gifts.has(G.id)){c.className='gift'+(off.has(G.id)?' off':'');c.innerHTML='<div class="em">'+G.e+'</div><b>'+G.name+'</b><small>'+G.d+(off.has(G.id)?' · hidden':'')+'</small>';
@@ -716,6 +762,7 @@ function renderGifts(){document.getElementById('gsub').textContent=gifts.size+' 
     else{c.className='gift lk';c.innerHTML='<div class="em">?</div><b>???</b><small>not found yet</small>';}
     gg.appendChild(c);});}
 document.getElementById('col').addEventListener('click',e=>{if(e.target.id==='col')toggleCol();});
+document.getElementById('colX').addEventListener('click',e=>{e.stopPropagation();if(colOpen)toggleCol();});
 function closeView(){viewing=false;document.getElementById('view').classList.remove('on');}
 document.getElementById('view').addEventListener('click',closeView);
 document.getElementById('photo').addEventListener('click',closePhoto);
