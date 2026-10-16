@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#cfe3dc;font-family:'Pixelify Sans',monospace;user-select:none;-webkit-user-select:none}
+  html,body{font-variant-ligatures:none;font-feature-settings:'liga' 0,'clig' 0;margin:0;height:100%;overflow:hidden;background:#cfe3dc;font-family:'Pixelify Sans',monospace;user-select:none;-webkit-user-select:none}
   canvas{position:fixed;inset:0;width:100vw;height:100vh;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
   #start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
     background:radial-gradient(ellipse at center,rgba(255,250,240,.55),rgba(40,60,50,.55));color:#fff;text-shadow:0 2px 0 #2a3a30,0 0 18px rgba(0,0,0,.35);cursor:pointer;transition:opacity 1.2s}
@@ -463,10 +463,10 @@ const GIFTS=[
  {id:'shoes',e:'👟',name:'Running shoes',d:'walk faster'}];
 let gifts=new Set(),off=new Set();try{gifts=new Set(JSON.parse(localStorage.getItem('juju_gifts')||'[]'));off=new Set(JSON.parse(localStorage.getItem('juju_off')||'[]'));}catch(e){}
 const QUESTS=[
- {name:'A Walk Around',obj:'Visit different zones',goal:4,metric:()=>Q.zones.length,reward:'crown',
-  intro:"Ah, a new face in the garden! The world grows wherever you walk. Go and see it: visit 4 different zones, then come back and tell me about them.",
-  wait:"Still exploring? Walk north, east, south or west. Each way leads somewhere new.",
-  done:"Four zones already! You have the soul of a gardener. Take this crown, I made it from the heart flowers.",after:"Every walk makes the world a little bigger."},
+ {name:'A Walk Around',obj:'Zones with a viewspot found',goal:4,abs:1,metric:()=>new Set([...found].map(id=>id/6|0)).size,reward:'crown',
+  intro:"Ah, a new face in the garden! The world grows wherever you walk. Go and see it: find a glowing ★ viewspot in 4 different zones, then come back and tell me about them.",
+  wait:"Still exploring? Each zone hides its own ★ viewspots. Walk north, east, south or west.",
+  done:"Four zones, four views! You have the soul of a gardener. Take this crown, I made it from the heart flowers.",after:"Every walk makes the world a little bigger."},
  {name:'Splash Party',obj:'Jump into the water',goal:3,metric:()=>Q.splash,reward:'bubbles',
   intro:"The fish are bored today. Jump into the lake three times to cheer them up! Big splashes, please.",
   wait:"Wade into the water and jump. The bigger the splash, the better!",
@@ -486,7 +486,8 @@ const QUESTS=[
 let Q={st:[0,0,0,0,0],base:[0,0,0,0,0],zones:[],splash:0,opened:0,night:0};
 try{const q=JSON.parse(localStorage.getItem('juju_quests')||'null');if(q)Q=Object.assign(Q,q);}catch(e){}
 const saveQ=()=>{try{localStorage.setItem('juju_quests',JSON.stringify(Q));}catch(e){}};
-const qProg=i=>Math.max(0,QUESTS[i].metric()-Q.base[i]);
+const qProg=i=>Math.max(0,QUESTS[i].metric()-(QUESTS[i].abs?0:Q.base[i]));
+const activeQ=()=>Q.st.findIndex(v=>v===1);
 let nearNpc=-1,dlgOpen=false,dlgAct=null;
 function qDir(n){const dx=(n.x-n.y)-(P.x-P.y),dy=((n.x+n.y)-(P.x+P.y))/2,d=Math.round(Math.hypot(n.x-P.x,n.y-P.y));
   if(d<2)return'here';return['→','↘','↓','↙','←','↖','↑','↗'][(Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8]+' '+d+' m';}
@@ -495,7 +496,7 @@ function renderQuests(){let h='',act=0;
   QUESTS.forEach((q,i)=>{if(Q.st[i]!==1)return;act++;const p=Math.min(q.goal,qProg(i)),n=NPCS[i];
     h+='<div class="q"><div class="qt">'+q.name+'</div>'+(p>=q.goal?'<div class="qo ok">✓ Return to '+n.name+' <span class="dir">'+qDir(n)+'</span></div>'
       :'<div class="qo">• '+q.obj+': '+p+' / '+q.goal+(q.unit||'')+'</div>')+'</div>';});
-  const av=NPCS.map((n,i)=>i).filter(i=>Q.st[i]===0);
+  const av=activeQ()>=0?[]:NPCS.map((n,i)=>i).filter(i=>Q.st[i]===0);
   if(av.length){const i=av.sort((a,b)=>Math.hypot(NPCS[a].x-P.x,NPCS[a].y-P.y)-Math.hypot(NPCS[b].x-P.x,NPCS[b].y-P.y))[0];
     h+='<div class="q"><div class="qo">❗ '+NPCS[i].name+' has a quest <span class="dir">'+qDir(NPCS[i])+'</span></div></div>';}
   if(!h)h='<div class="qo ok">All quests done. Thank you, Juju!</div>';
@@ -559,7 +560,9 @@ function grantGift(id){let G=GIFTS.find(g=>g.id===id);if(gifts.has(id)){const mi
   for(let i=0;i<24;i++)parts.push({x:cam.x+(Math.random()-.5)*20,y:cam.y-10+(Math.random()-.5)*14,vx:(Math.random()-.5)*40,vy:-20-Math.random()*30,life:1.4,max:1.4,col:pick(['#ffe27a','#ff9ab8','#fff'],Math.random()),k:'spark'});
   if(AC&&!muted){const tt=AC.currentTime;[72,76,79,84,88].forEach((m,i)=>play('bell',buses[1],m,tt+i*.09));}}
 function talk(i){const q=QUESTS[i],n=NPCS[i],st=Q.st[i];let txt,btn,act;
-  if(st===0){txt=q.intro+'\n\nQuest: '+q.obj+' ('+q.goal+(q.unit||'')+')';btn='Accept quest';act=()=>{Q.st[i]=1;Q.base[i]=q.metric();saveQ();toast('New quest: '+q.name);
+  const aq=activeQ();
+  if(st===0&&aq>=0){txt="You look busy already! Finish "+QUESTS[aq].name+" for "+NPCS[aq].name+" first, then come back to see me.";btn='Okay';act=null;}
+  else if(st===0){txt=q.intro+'\n\nQuest: '+q.obj+' ('+q.goal+(q.unit||'')+')';btn='Accept quest';act=()=>{Q.st[i]=1;Q.base[i]=q.metric();saveQ();toast('New quest: '+q.name);
       if(AC&&!muted){const tt=AC.currentTime;[67,72,76].forEach((m,j)=>play('bell',buses[1],m,tt+j*.1));}};}
   else if(st===1&&qProg(i)>=q.goal){txt=q.done;btn='Claim reward 🎁';act=()=>{Q.st[i]=2;saveQ();grantGift(q.reward);toast('Quest complete: '+q.name);};}
   else if(st===1){txt=q.wait+'\n\n'+q.obj+': '+Math.min(q.goal,qProg(i))+' / '+q.goal+(q.unit||'');btn='Okay';act=null;}
@@ -786,7 +789,7 @@ function draw(){
       g.fillStyle='rgba(25,40,25,.3)';g.fillRect(o.sx-4,o.sy-1,9,3);g.fillRect(o.sx-5,o.sy,11,1);
       const bob=Math.sin(now*2+i)>.7?-1:0,spr=NPCSPR[i],y0=o.sy-26+bob+Math.round((1-a)*6);
       if((W>>1)<o.sx){g.save();g.translate(o.sx+7,0);g.scale(-1,1);g.drawImage(spr,0,y0);g.restore();}else g.drawImage(spr,o.sx-7,y0);
-      const st=Q.st[i];if(st<2){const ready=st===1&&qProg(i)>=QUESTS[i].goal,mk2=st===0?'!':'?',col=st===0||ready?'#ffd23a':'#c8c8c8',my2=y0-9+Math.round(Math.sin(now*4+i)*1.5);
+      const st=Q.st[i];if(st<2){const ready=st===1&&qProg(i)>=QUESTS[i].goal,mk2=st===0?'!':'?',col=(st===0&&activeQ()<0)||ready?'#ffd23a':'#c8c8c8',my2=y0-9+Math.round(Math.sin(now*4+i)*1.5);
         const G=mk2==='!'?['.##.','.##.','.##.','.##.','....','.##.']:['.##.','#..#','...#','..#.','....','..#.'];
         G.forEach((r,yy)=>[...r].forEach((c,xx)=>{if(c==='#'){g.fillStyle='rgba(40,24,0,.8)';g.fillRect(o.sx-2+xx+1,my2+yy+1,1,1);g.fillStyle=col;g.fillRect(o.sx-2+xx,my2+yy,1,1);}}));}
       continue;}
