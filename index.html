@@ -510,7 +510,7 @@ const QUESTS=[
   intro:"The stars only talk to those who walk beneath them. Switch to night and wander for a while.",
   wait:"Switch to night, then just walk. The stars are listening.",
   done:"The stars told me you came. Take this jar of fireflies, so the night is never dark for you.",after:"Look up sometimes. It's beautiful."}];
-let Q={st:[0,0,0,0,0],base:[0,0,0,0,0],zones:[],splash:0,opened:0,night:0};
+let Q={st:[0,0,0,0,0],base:[0,0,0,0,0],zones:[],splash:0,opened:0,night:0,met:[]};
 try{const q=JSON.parse(localStorage.getItem('juju_quests')||'null');if(q)Q=Object.assign(Q,q);}catch(e){}
 const saveQ=()=>{try{localStorage.setItem('juju_quests',JSON.stringify(Q));}catch(e){}};
 const qProg=i=>Math.max(0,QUESTS[i].metric()-(QUESTS[i].abs?0:Q.base[i]));
@@ -528,6 +528,11 @@ function renderQuests(){let h='',act=0;
     h+='<div class="q"><div class="qo">❗ '+NPCS[i].name+' has a quest <span class="dir">'+qDir(NPCS[i])+'</span></div></div>';}
   if(!h)h='<div class="qo ok">All quests done. Thank you, Juju!</div>';
   document.getElementById('qn').textContent=Q.st.filter(v=>v===2).length+' / '+QUESTS.length;
+  {const mm=t=>{t=Math.max(0,Math.ceil(t));return (t/60|0)+':'+String(t%60).padStart(2,'0');},met=(Q.met||[]).length;
+    h+='<div class="qh" style="margin-top:8px;cursor:default"><span>Guests</span><span>'+met+' / '+VIS.length+'</span></div>';
+    if(!started)h+='<div class="qo">Someone will visit soon…</div>';
+    else if(VS.st==='here'){const gone=VS.i===0&&VS.sub==='gone';h+='<div class="q"><div class="qt">'+VIS[VS.i].name+' is here</div><div class="qo">• leaves in '+mm(VS.t)+(gone?'':' <span class="dir">'+qDir({x:VS.x,y:VS.y})+'</span>')+'</div></div>';}
+    else h+='<div class="qo">Next guest in '+mm(VS.t)+'</div>';}
   if(h!==qHtml){qHtml=h;document.getElementById('qlist').innerHTML=h;}}
 function vPuff(x,y){const sx=(x-y)*16,sy=(x+y)*8-getT(Math.round(x),Math.round(y)).h*HZ;for(let i=0;i<16;i++)parts.push({x:sx+(Math.random()-.5)*10,y:sy-8+(Math.random()-.5)*14,vx:(Math.random()-.5)*30,vy:-10-Math.random()*20,life:.8,max:.8,col:'rgba(255,255,255,.9)',k:'spark'});}
 function singNote(m,t,d){const f=mtof(m),o=AC.createOscillator(),o2=AC.createOscillator(),gn=AC.createGain(),fl=AC.createBiquadFilter(),g2=AC.createGain(),l=AC.createOscillator(),lg=AC.createGain();
@@ -540,7 +545,7 @@ function kekeBar(t,b){const C=[[60,64,67],[55,59,62,67],[57,60,64],[53,57,60,65]
   M.forEach((m,q)=>{if(m)singNote(m,t+q*e,e*(M[q+1]===null?1.8:.9));});}
 function vSay(txt,quiet){VS.line=txt;VS.lineT=2.8;if(!quiet&&AC&&!muted)for(let i=0;i<3;i++)voice(master,'square',480+Math.random()*260+VS.i*70,AC.currentTime+i*.07,.003,.012,.05);}
 function nextVisitor(){if(!VS.order.length){const a=[0,1,2,3,5];for(let i=4;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}VS.order=a.concat(4);}
-  VS.i=VS.order.shift();const a=Math.random()*6.28,r=VS.i===0?6:4.5;VS.x=P.x+Math.cos(a)*r;VS.y=P.y+Math.sin(a)*r;VS.z=getT(Math.round(VS.x),Math.round(VS.y)).h*HZ;
+  VS.i=VS.order.shift();if(!Q.met)Q.met=[];if(!Q.met.includes(VS.i)){Q.met.push(VS.i);saveQ();}const a=Math.random()*6.28,r=VS.i===0?6:4.5;VS.x=P.x+Math.cos(a)*r;VS.y=P.y+Math.sin(a)*r;VS.z=getT(Math.round(VS.x),Math.round(VS.y)).h*HZ;
   VS.st='here';VS.play=false;VS.t=55+Math.random()*12;VS.step=0;VS.talkT=1;VS.sub='run';VS.subT=7+Math.random()*4;VS.tx=VS.x;VS.ty=VS.y;VS.shootT=3;VS.line='';vPuff(VS.x,VS.y);}
 function leaveVisitor(){VS.play=false;vPuff(VS.x,VS.y);VS.st='wait';VS.t=80+Math.random()*25;VS.line='';
   if(VS.bag){VS.bag=false;off.delete('backpack');saveGifts();toast('Danny gave your bag back 🎒');}}
