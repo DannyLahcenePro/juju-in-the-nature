@@ -350,9 +350,9 @@ const NPCS=[
 const NPCSPR=NPCS.map(n=>npcSprite(n.pal,n.o));
 /* ---------- visitors: one at a time for ~1 min, then a ~1min30 pause; Danny always comes last ---------- */
 const VIS=[
- {name:'Tigidi',pal:{h:'#3a2a1e',H:'#5a4030',s:'#d8a07a',S:'#b8805a',e:'#1a1010',m:'#b05050',r:'#e09080',k:'#d83a3a',K:'#b02a2a',g:'#ffffff',c:'#c83030',C:'#a82424',p:'#e85050',b:'#f2f2f2',B:'#ffffff'},o:{short:1,hat:'capback'},lines:['tigidi is everywhere','yeaah']},
+ {name:'Tigidi',pal:{h:'#3a2a1e',H:'#5a4030',s:'#d8a07a',S:'#b8805a',e:'#1a1010',m:'#b05050',r:'#e09080',k:'#d83a3a',K:'#b02a2a',g:'#ffffff',c:'#c83030',C:'#a82424',p:'#e85050',b:'#f2f2f2',B:'#ffffff'},o:{short:1,hat:'capback'},lines:['tigidi is everywhere','yeaah','TIGIDI in the HOUSE','TIGIDI in the CLUB','TIGIDI in the TREES','TIGIDI in the WIND']},
  {name:'Business',pal:{h:'#141418',H:'#2a2a34',s:'#e8b894',S:'#cc9874',e:'#1a1010',m:'#b05a5a',r:'#e8a090',k:'#1c1c22',K:'#121216',g:'#f4f4f4',c:'#1c1c22',C:'#121216',p:'#26262e',b:'#0a0a0c',B:'#0a0a0c'},o:{short:1,tie:1,shades:1},lines:['TIME IS MONEY BABY','NO POLITIKS HERE','CASH IS KING','BUY LOW, SELL HIGH','SHOW ME THE MONEY','I NEVER SLEEP, I INVEST']},
- {name:'Cowboy',pal:{h:'#6a4426',H:'#8a5a34',s:'#e0a880',S:'#c08860',e:'#1a1010',m:'#a85a4a',r:'#e09880',k:'#d8c8a8',K:'#8a5a2a',g:'#c8343c',c:'#3a5a8a',C:'#2e4a74',p:'#4a6a9a',b:'#5a3a1a',B:'#c8a040'},o:{short:1,hat:'cowboy',vest:1},lines:['YIHAA!',"c'est le western !"]},
+ {name:'Cowboy',pal:{h:'#6a4426',H:'#8a5a34',s:'#e0a880',S:'#c08860',e:'#1a1010',m:'#a85a4a',r:'#e09880',k:'#d8c8a8',K:'#8a5a2a',g:'#c8343c',c:'#3a5a8a',C:'#2e4a74',p:'#4a6a9a',b:'#5a3a1a',B:'#c8a040'},o:{short:1,hat:'cowboy',vest:1},lines:['YIHAA!',"c'est le western !","Let's have a whiskey!","Let's dance at the Ranch!",'Howdy partner!','Giddy up!',"This town ain't big enough for the two of us",'Saddle up, cowgirl!']},
  {name:'Bouh',pal:{h:'#e8c060',H:'#f4d880',s:'#f4cca8',S:'#dcac88',e:'#2a1a10',m:'#3a1a1a',r:'#f4a0a0',k:'#f08ab0',K:'#d06890',g:'#ffffff',c:'#f08ab0',C:'#d06890',p:'#f4a0c0',b:'#c03060',B:'#d06890'},o:{short:1,pigtails:1,skip:[12,16]},lines:['euh :o','oh :o',"j'ai peur"]},
  {name:'Danny',pal:{h:'#1a1414',H:'#342828',s:'#d8a682',S:'#bc8862',e:'#1a1010',m:'#b05a5a',r:'#e09888',k:'#3a6ab0',K:'#2a5090',g:'#3a6ab0',c:'#2a3550',C:'#202a40',p:'#34405e',b:'#f0f0f0',B:'#2a5090'},o:{short:1},lines:[]}];
 const VSPR=VIS.map(v=>npcSprite(v.pal,v.o));
@@ -521,8 +521,15 @@ function updVisitor(dt){if(!started)return;VS.t-=dt;VS.lineT-=dt;VS.gunT-=dt;
   if(VS.i===0){ // Tigidi: runs around at a distance, vanishes, pops up somewhere else
     VS.subT-=dt;
     if(VS.sub==='run'){const a=Math.atan2(VS.y-P.y,VS.x-P.x)+.9;VS.tx=P.x+Math.cos(a)*5.5;VS.ty=P.y+Math.sin(a)*5.5;mx=VS.tx-VS.x;my=VS.ty-VS.y;sp=5;
-      if(VS.talkT<=0){vSay(pick(v.lines,Math.random()));VS.talkT=3+Math.random()*2;}
-      if(VS.subT<=0){vPuff(VS.x,VS.y);VS.sub='gone';VS.subT=2+Math.random()*3;VS.line='';}}
+      VS.modeT=(VS.modeT||0)-dt;
+      if(VS.modeT<=0){const m=Math.random();VS.mode=m<.35?'fly':m<.65?'dig':'ground';VS.modeT=2.2+Math.random()*1.6;
+        if(VS.mode==='fly'){vSay('TIGIDI in the SKY');VS.talkT=2.5;}else if(VS.mode==='dig'){vSay('TIGIDI in the GROUND');VS.talkT=2.5;}}
+      const tA=VS.mode==='fly'?30+Math.sin(now*3)*4:0,tS=VS.mode==='dig'?26:0;
+      VS.alt=(VS.alt||0)+(tA-(VS.alt||0))*Math.min(1,dt*3);VS.sink=(VS.sink||0)+(tS-(VS.sink||0))*Math.min(1,dt*4);
+      if(VS.sink>3&&Math.random()<dt*25){const sx2=(VS.x-VS.y)*16,sy2=(VS.x+VS.y)*8-VS.z;parts.push({x:sx2+(Math.random()-.5)*10,y:sy2-1,vx:(Math.random()-.5)*30,vy:-20-Math.random()*20,life:.6,max:.6,col:pick(['#7a5232','#5a3a22','#9a7048'],Math.random()),k:'drop'});}
+      if(VS.alt>8&&Math.random()<dt*20)parts.push({x:(VS.x-VS.y)*16+(Math.random()-.5)*6,y:(VS.x+VS.y)*8-VS.z-VS.alt+2,vx:0,vy:6,life:.7,max:.7,col:pick(['#ffffff','#ffe27a','#ff8a8a'],Math.random()),k:'spark'});
+      if(VS.talkT<=0){const w=getT(Math.round(VS.x),Math.round(VS.y)).water&&VS.mode==='ground';vSay(w?'TIGIDI in the WATER':VS.mode==='fly'?'TIGIDI in the SKY':VS.mode==='dig'?'TIGIDI in the GROUND':pick(v.lines,Math.random()));VS.talkT=3+Math.random()*2;}
+      if(VS.subT<=0){vPuff(VS.x,VS.y-(VS.alt||0)/16);VS.sub='gone';VS.subT=2+Math.random()*3;VS.line='';VS.alt=0;VS.sink=0;VS.mode='ground';VS.modeT=1;}}
     else if(VS.subT<=0){const a=Math.random()*6.28;VS.x=P.x+Math.cos(a)*6;VS.y=P.y+Math.sin(a)*6;VS.z=getT(Math.round(VS.x),Math.round(VS.y)).h*HZ;VS.sub='run';VS.subT=3.5+Math.random()*2.5;vPuff(VS.x,VS.y);VS.talkT=.3;}}
   else if(VS.i===1||VS.i===2){ // Business and Cowboy stroll around Juju
     if(Math.hypot(VS.tx-VS.x,VS.ty-VS.y)<.3||dist>8){const a=Math.random()*6.28,r=2.5+Math.random()*3;VS.tx=P.x+Math.cos(a)*r;VS.ty=P.y+Math.sin(a)*r;}
@@ -546,17 +553,19 @@ function updVisitor(dt){if(!started)return;VS.t-=dt;VS.lineT-=dt;VS.gunT-=dt;
   if(!VS.moving&&VS.i===4)VS.f=dx-dy>0?1:-1;
   const th=getT(Math.round(VS.x),Math.round(VS.y)).h*HZ;VS.z+=(th-VS.z)*Math.min(1,dt*10);}
 function drawVisitor(ox,oy){const v=VIS[VS.i],spr=VSPR[VS.i],sx=Math.round((VS.x-VS.y)*16-ox),sy=Math.round((VS.x+VS.y)*8-oy-VS.z);
-  const wet=getT(Math.round(VS.x),Math.round(VS.y)).water,sh=wet?20:28,drop=v.o.skip?v.o.skip.length:0;
-  g.fillStyle='rgba(25,40,25,.3)';g.fillRect(sx-4,sy-1,9,3);
+  const alt=VS.i===0?Math.round(VS.alt||0):0,sink=VS.i===0?Math.round(VS.sink||0):0;
+  const wet=getT(Math.round(VS.x),Math.round(VS.y)).water&&alt<4&&sink<2,sh=sink>0?Math.max(0,28-sink):(wet?20:28),drop=v.o.skip?v.o.skip.length:0;
+  if(alt>4){g.fillStyle='rgba(25,40,25,.22)';g.fillRect(sx-3,sy-1,7,2);}else{g.fillStyle='rgba(25,40,25,.3)';g.fillRect(sx-4,sy-1,9,3);}
+  if(sink>2){g.fillStyle='#6a4a2c';g.fillRect(sx-5,sy-1,11,2);g.fillStyle='#8a6440';g.fillRect(sx-4,sy-2,9,1);}
   const bob=VS.moving?(Math.sin(now*(VS.i===0?24:12))>0?-1:0):0,tr=VS.i===3&&Math.hypot(P.x-VS.x,P.y-VS.y)<4&&Math.sin(now*40)>0?1:0;
-  const y0=sy-26+bob+drop+(wet?6:0);
+  const y0=sy-26+bob+drop+(wet?6:0)-alt+sink;
   g.save();if(VS.f<0){g.translate(sx+7+tr,0);g.scale(-1,1);g.drawImage(spr,0,0,14,sh,0,y0,14,sh);}else g.drawImage(spr,0,0,14,sh,sx-7+tr,y0,14,sh);g.restore();
   if(VS.i===2&&VS.gunT>0){g.fillStyle='#2a2a30';g.fillRect(VS.f>0?sx+6:sx-10,y0+17,4,2);g.fillRect(VS.f>0?sx+6:sx-7,y0+19,1,1);}
   if(VS.i===1){const cx=VS.f>0?sx+4:sx-11,cy=y0+18+(VS.moving&&Math.sin(now*12)>0?1:0);
     g.fillStyle='#2a1a0e';g.fillRect(cx+2,cy-2,3,1);g.fillRect(cx+1,cy-1,1,1);g.fillRect(cx+5,cy-1,1,1);g.fillStyle='#6a4426';g.fillRect(cx,cy,7,5);g.fillStyle='#8a5a34';g.fillRect(cx,cy,7,1);g.fillStyle='#4a2e18';g.fillRect(cx,cy+4,7,1);
     g.fillStyle='#f0c850';g.fillRect(cx+3,cy+1,1,2);g.fillStyle='#6ab86a';g.fillRect(VS.f>0?cx+5:cx+1,cy-1,1,1);}
   if(VS.bag){g.fillStyle='#8a5a2b';g.fillRect(VS.f>0?sx-8:sx+5,y0+15,3,5);g.fillStyle='#b07a44';g.fillRect(VS.f>0?sx-8:sx+5,y0+16,3,1);}
-  VS.bx=sx;VS.by=y0+1;}
+  VS.bx=sx;VS.by=Math.min(y0,sy-26)+1;}
 function grantGift(id){let G=GIFTS.find(g=>g.id===id);if(gifts.has(id)){const miss=GIFTS.filter(g=>!gifts.has(g.id));if(!miss.length){toast('♥ Thank you!');return;}G=miss[Math.random()*miss.length|0];}
   gifts.add(G.id);if(G.hat)GIFTS.forEach(o=>{if(o.hat&&o.id!==G.id)off.add(o.id);});off.delete(G.id);saveGifts();updHud();
   toast('🎁 '+G.name+' ! ('+gifts.size+'/'+GIFTS.length+')');
