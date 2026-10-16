@@ -69,6 +69,17 @@
   #photo button:focus-visible{outline:2px solid #ffe27a;outline-offset:2px}
   #view canvas{position:static;width:min(90vw,calc(78vh*16/9));height:auto;aspect-ratio:16/9;border:10px solid #7a4e2a;outline:4px solid #c8945a;box-shadow:0 12px 40px rgba(0,0,0,.6);transform:scale(.96);transition:transform 1.2s}
   #view.on canvas{transform:scale(1)}
+  #view.gold canvas{border-color:#b8862a;outline-color:#ffe39a;box-shadow:0 0 0 2px #7a5a1a,0 0 60px rgba(255,215,106,.55),0 12px 40px rgba(0,0,0,.6)}
+  #view.gold p{color:#ffe39a}
+  #marvel{max-width:1200px;margin:0 auto 14px}
+  .mcard{position:relative;display:flex;gap:16px;align-items:center;padding:12px;border-radius:12px;border:2px solid #d4a62a;background:linear-gradient(120deg,rgba(255,215,106,.16),rgba(120,80,200,.14));overflow:hidden}
+  .mcard::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,240,190,.22) 50%,transparent 60%);transform:translateX(-100%);animation:shine 4.5s ease-in-out infinite;pointer-events:none}
+  @keyframes shine{60%,100%{transform:translateX(100%)}}
+  @media (prefers-reduced-motion: reduce){.mcard::after{animation:none}}
+  .mcard .mthumb{flex:0 0 auto;width:min(240px,42vw);aspect-ratio:16/9;border:3px solid #b8862a;outline:2px solid #ffe39a;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(45deg,#2a2438 0 6px,#231e30 6px 12px);font-size:34px;color:#ffe39a}
+  .mcard .mthumb canvas{width:100%;height:100%;image-rendering:pixelated}
+  .mcard.open{cursor:pointer}.mcard b{display:block;color:#ffe39a;font-size:18px;margin-bottom:4px}.mcard small{opacity:.85;line-height:1.4;display:block}
+  .mbar{margin-top:8px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden;max-width:220px}.mbar i{display:block;height:100%;background:#ffd76a}
   #view p{margin:0;color:#fff;font-size:clamp(16px,2.4vw,26px);text-shadow:0 2px 0 #000;text-align:center}
   #view small{color:#ddd;font-size:14px}
   #col{position:fixed;inset:0;z-index:4;background:rgba(18,22,20,.9);opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;padding:20px 16px;box-sizing:border-box;color:#fff}
@@ -110,7 +121,7 @@
 <div id="hint">★ press E (or click) on the sign to enjoy the view</div>
 <div id="view"><canvas id="vc" width="192" height="108"></canvas><p id="vcap"></p><small>click or press Esc to keep walking</small></div>
 <div id="col"><div class="colbar"><h2>Collection</h2><button id="colX" type="button">✕ Close</button></div>
-<div class="sub" id="colsub"></div><div id="zones"></div>
+<div class="sub" id="colsub"></div><div id="marvel"></div><div id="zones"></div>
 <details class="zone" id="gdet"><summary><span class="zn">Gifts</span><span class="zc" id="gsub"></span><span class="zbar"><i id="gbar"></i></span></summary><p class="ghint">Open the pink boxes. Tap a gift to wear or hide it.</p><div id="ggrid"></div></details></div>
 <div id="pad" hidden><div id="stick"><div id="knob"></div></div>
   <div id="btns">
@@ -852,10 +863,54 @@ function painting(seed,b){
 const VIEWS=[' over the misty pines',' over the sunny meadow',' over the quiet lake',' under the cherry blossoms',' over the autumn woods',' over the snowy peaks',' over the golden dunes',' in the moonlit glade'];
 const ZN=['Pines','Meadow','Lake','Sakura','Autumn','Snow','Desert','Glade'];
 const paintId=t=>t.b*6+(hash(t.x,t.y,21)*6|0);
+let pendingMarvel=false;
+// the Marvelous View: a hand-composed painting, revealed only once every other view is found
+function marvel(){const w=192,h=108,img=new ImageData(w,h),D=img.data,R=rng(20261016);
+  const set=(x,y,c,a=1)=>{x|=0;y|=0;if(x<0||y<0||x>=w||y>=h)return;const i=(y*w+x)*4;D[i]+=(c[0]-D[i])*a;D[i+1]+=(c[1]-D[i+1])*a;D[i+2]+=(c[2]-D[i+2])*a;D[i+3]=255;};
+  const L=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t),SK=[[8,10,36],[34,26,84],[96,58,142],[214,118,150],[255,186,140],[255,222,170]],HZN=64;
+  const sky=(x,y)=>{const t=clamp(y/HZN,0,1)*(SK.length-1),i=Math.min(SK.length-2,Math.floor(t)),f=t-i,q=Math.floor(f*6+BAY[(y%4)*4+x%4]/16)/6;return L(SK[i],SK[i+1],clamp(q,0,1));};
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)set(x,y,sky(x,y));
+  for(let i=0;i<150;i++){const x=R()*w,y=R()*44,b=.35+R()*.65;set(x,y,[255,250,230],b*(1-y/50));if(R()<.08){set(x-1,y,[255,250,230],.4);set(x+1,y,[255,250,230],.4);set(x,y-1,[255,250,230],.4);set(x,y+1,[255,250,230],.4);}}
+  // aurora ribbons
+  for(let k=0;k<3;k++)for(let x=0;x<w;x++){const yc=10+k*7+Math.sin(x*.045+k*1.7)*6+Math.sin(x*.13+k)*2,c=[[90,255,170],[80,220,255],[220,120,255]][k],al=(.55-k*.12)*(.55+.45*Math.sin(x*.21+k*2));
+    for(let dy=0;dy<16;dy++)set(x,yc+dy,c,al*Math.pow(1-dy/16,1.6));}
+  // shooting star
+  for(let i=0;i<18;i++)set(30+i*1.6,8+i*.6,[255,255,240],1-i/18);
+  // crescent moon
+  for(let y=-9;y<=9;y++)for(let x=-9;x<=9;x++){const d=Math.hypot(x,y),d2=Math.hypot(x+4,y-2);if(d<=9&&d2>8)set(158+x,20+y,[255,246,214]);else if(d<16&&d>9)set(158+x,20+y,[255,240,200],.12*(1-(d-9)/7));}
+  // warm glow on the horizon
+  for(let y=30;y<80;y++)for(let x=40;x<150;x++){const d=Math.hypot((x-96)/1.6,y-64);if(d<34)set(x,y,[255,200,140],.22*(1-d/34));}
+  // mountains: far violet range with lit snow, nearer dark range
+  const ridge=(x,f,s,a,b)=>b-fbm(x*f,s,s*3)*a;
+  for(let x=0;x<w;x++){const t=ridge(x,.025,31,40,64);for(let y=t|0;y<72;y++){const dy=y-t;set(x,y,dy<3&&t<40?[255,214,214]:dy<5&&t<44?[220,170,200]:L([120,86,160],[70,52,110],Math.min(1,dy/20)));}}
+  for(let x=0;x<w;x++){const t=ridge(x,.04,57,22,70);for(let y=t|0;y<74;y++)set(x,y,L([52,40,92],[30,24,60],Math.min(1,(y-t)/12)));}
+  // lake reflecting the sky and aurora
+  const LY=74;for(let y=LY;y<h;y++)for(let x=0;x<w;x++){const my=clamp(2*LY-y-1+Math.round(Math.sin(y*1.7+x*.12)*1.2),0,LY-1),j=(my*w+x)*4;let c=L([D[j],D[j+1],D[j+2]],[16,30,74],.28+(y-LY)/90);
+    if(Math.sin(x*.27+y*2.1)>.9)c=L(c,[255,255,255],.25);set(x,y,c);}
+  for(let k=0;k<3;k++)for(let x=0;x<w;x++){const yr=LY+8+k*4+Math.round(Math.sin(x*.045+k*1.7)*2);if(Math.sin(x*.5+k)>.2)set(x,yr,[[90,255,170],[80,220,255],[220,120,255]][k],.22);}
+  for(let y=LY;y<h;y++)if(R()<.7)set(158+Math.round(Math.sin(y)*2),y,[255,240,200],.35*(1-(y-LY)/40));
+  // right cliff with a waterfall and a little rainbow in its mist
+  for(let y=36;y<h;y++){const xr=128+Math.round(fbm(y*.1,3,9)*8);for(let x=xr;x<w;x++)if(y>=36+fbm(x*.09,1,11)*14)set(x,y,L([44,36,70],[22,18,40],Math.min(1,(x-xr)/30)));}
+  for(let y=44;y<LY+4;y++)for(let x=124;x<132;x++){const v=Math.sin(y*.9-x*1.3)*.5+.5;set(x,y,L([150,200,255],[255,255,255],v),.85);}
+  for(let i=0;i<70;i++){const a=R()*Math.PI,r=R()*14;set(128+Math.cos(a)*r*1.4,LY+2-Math.sin(a)*r*.6,[255,255,255],.35);}
+  [[255,90,90],[255,170,70],[255,240,110],[110,230,120],[100,170,255],[170,110,240]].forEach((c,k)=>{for(let a=0;a<Math.PI;a+=.02){const r=20-k;set(128+Math.cos(a)*r,LY-Math.sin(a)*r*.8,c,.22);}});
+  // left cliff with a glowing cherry tree; Juju and her dog watching the view
+  for(let y=54;y<h;y++){const xr=56-Math.round((y-58)*.15)+Math.round(fbm(y*.12,5,7)*6);for(let x=0;x<xr;x++)if(y>=(x>36?57:54+fbm(x*.1,2,13)*8))set(x,y,L([40,32,62],[20,16,36],Math.min(1,(xr-x)/30)));}
+  for(let y=0;y<14;y++){set(22,70-y,[46,30,40]);set(23,70-y,[36,24,32]);}
+  for(let i=0;i<520;i++){const a=R()*Math.PI*2,r=Math.sqrt(R())*15;const x=23+Math.cos(a)*r*1.3,y=50+Math.sin(a)*r*.75;set(x,y,R()<.5?[255,170,205]:[255,214,232],.9);}
+  for(let i=0;i<30;i++)set(30+R()*80,46+R()*40,[255,200,225],.8);
+  const J=[[0,0,[92,56,32]],[1,0,[92,56,32]],[0,1,[92,56,32]],[1,1,[230,180,150]],[0,2,[92,56,32]],[1,2,[180,140,100]],[0,3,[180,140,100]],[1,3,[180,140,100]],[0,4,[30,30,36]],[1,4,[30,30,36]]];
+  J.forEach(([a,b,c])=>set(44+a,52+b,c));set(48,55,[185,132,76]);set(49,55,[185,132,76]);set(50,54,[185,132,76]);set(48,56,[150,100,60]);set(50,56,[150,100,60]);
+  for(let i=0;i<40;i++){const x=R()*w,y=60+R()*46;set(x,y,[250,240,140],.6+R()*.4);}
+  return img;}
+function showMarvel(){viewing=true;for(const k in keys)keys[k]=false;ptr.down=false;
+  document.getElementById('vc').getContext('2d').putImageData(marvel(),0,0);
+  document.getElementById('vcap').textContent='✦ The Marvelous View · every view found, by Juju';const v=document.getElementById('view');v.classList.add('gold');v.classList.add('on');
+  if(AC&&!muted){const tt=AC.currentTime;[60,64,67,71,72,76,79,83,84].forEach((m,i)=>play('bell',master,m+12,tt+i*.14));}}
 function openView(t){const id=paintId(t);
-  if(!found.has(id)){found.add(id);saveFound();toast('New landscape! '+found.size+'/'+NPAINT);}
+  if(!found.has(id)){found.add(id);saveFound();toast('New landscape! '+found.size+'/'+NPAINT);if(found.size>=NPAINT)pendingMarvel=true;}
   updCnt();showPainting(id);}
-function showPainting(id){viewing=true;for(const k in keys)keys[k]=false;ptr.down=false;const b=id/6|0;
+function showPainting(id){document.getElementById('view').classList.remove('gold');viewing=true;for(const k in keys)keys[k]=false;ptr.down=false;const b=id/6|0;
   const p=painting(id*7919+101,b);document.getElementById('vc').getContext('2d').putImageData(p.img,0,0);
   document.getElementById('vcap').textContent='#'+(id+1)+' · '+p.cap+VIEWS[b];document.getElementById('view').classList.add('on');
   if(AC&&!muted){const tt=AC.currentTime;[72,76,79,84].forEach((m,i)=>play('bell',buses[b],m,tt+i*.18));}}
@@ -865,6 +920,9 @@ const openZones=new Set();
 function toggleCol(){colOpen=!colOpen;const el=document.getElementById('col');el.classList.toggle('on',colOpen);if(!colOpen)return;el.scrollTop=0;
   for(const k in keys)keys[k]=false;ptr.down=false;
   document.getElementById('colsub').textContent=found.size+' / '+NPAINT+' landscapes discovered — find the glowing ★ signs';
+  {const mv=document.getElementById('marvel'),ok=found.size>=NPAINT;
+    mv.innerHTML='<div class="mcard'+(ok?' open':'')+'"><div class="mthumb">'+(ok?'':'✦')+'</div><div><b>The Marvelous View</b><small>'+(ok?'Every view found. Tap to look at it again.':'The last view to find. It appears once all '+NPAINT+' views are discovered.')+'</small>'+(ok?'':'<div class="mbar"><i style="width:'+(found.size/NPAINT*100)+'%"></i></div><small style="margin-top:4px">'+found.size+' / '+NPAINT+'</small>')+'</div></div>';
+    if(ok){const c=document.createElement('canvas');c.width=192;c.height=108;c.getContext('2d').putImageData(marvel(),0,0);mv.querySelector('.mthumb').appendChild(c);mv.querySelector('.mcard').onclick=showMarvel;}}
   const zs=document.getElementById('zones');zs.innerHTML='';const grids=[];
   for(let b=0;b<8;b++){let n=0;for(let i=0;i<6;i++)if(found.has(b*6+i))n++;const d=document.createElement('details');d.className='zone';d.open=openZones.has(b);
     d.innerHTML='<summary><span class="zn">'+BIOMES[b].name+'</span><span class="zc">'+n+' / 6</span><span class="zbar"><i style="width:'+(n/6*100)+'%"></i></span></summary><div class="zgrid"></div>';
@@ -887,7 +945,8 @@ function renderGifts(){document.getElementById('gsub').textContent=gifts.size+' 
     gg.appendChild(c);});}
 document.getElementById('col').addEventListener('click',e=>{if(e.target.id==='col')toggleCol();});
 document.getElementById('colX').addEventListener('click',e=>{e.stopPropagation();if(colOpen)toggleCol();});
-function closeView(){viewing=false;document.getElementById('view').classList.remove('on');}
+function closeView(){viewing=false;document.getElementById('view').classList.remove('on');
+  if(pendingMarvel){pendingMarvel=false;toast('✦ You found every view!');setTimeout(showMarvel,900);}}
 document.getElementById('view').addEventListener('click',closeView);
 document.getElementById('dbtn').addEventListener('click',e=>{e.stopPropagation();closeDlg(true);});
 document.getElementById('dclose').addEventListener('click',e=>{e.stopPropagation();closeDlg(false);});
