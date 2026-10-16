@@ -237,7 +237,7 @@ SP.gift=S(mk(12,14,(x,P)=>{shadow(P,6,11,5,2);for(let X=1;X<11;X++)for(let y=4;y
   for(let y=3;y<11;y++){P(5,y,'#ffe27a');P(6,y,'#f5c842');}for(let X=1;X<11;X++)P(X,7,'#f5c842');P(3,2,'#ffe27a');P(4,3,'#ffe27a');P(8,2,'#ffe27a');P(7,3,'#ffe27a');}),11);
 const pix=(rows,pal)=>mk(rows[0].length,rows.length,(x,P)=>rows.forEach((r,y)=>[...r].forEach((c,X)=>{if(c!=='.')P(X,y,pal[c]);})));
 const DOG=pix(["........dd..",".......bbbbk","b......bbe..",".bbbbbbbbb..",".bbbbbbbb...",".b.b..b.b..."],{b:'#b9844c',d:'#7a5230',k:'#222',e:'#222'});
-const CAT=pix(["k.k.......","kkk......k","kgk.....k.","kkkkkkkkk.",".kkkkkkk..",".k.k..k.k."],{k:'#2a2a30',g:'#9fd04a'});
+const CAT=pix(["k.k.......","kkk......k","kgk.....k.","kkkkkkkkk.",".kkkkkkk..",".k.k..k.k."].map(r=>[...r].reverse().join("")),{k:'#2a2a30',g:'#9fd04a'});
 SP.mush=many(2,mush);
 SP.treeA=many(4,s=>tree(s,s%2?['#7a2e14','#a8441c','#d06a24','#e8963a','#f6c25a']:['#6e1a1a','#9a2a22','#c4402e','#e0644a','#f29a72'],{w:32,h:44,tt:24,cy:15,r:11,sr:10,tr:trunk}));
 SP.bushA=many(3,s=>bush(s,['#7a2e14','#a8441c','#d06a24','#e8963a']));
