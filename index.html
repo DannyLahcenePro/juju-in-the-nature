@@ -355,7 +355,33 @@ const VIS=[
  {name:'Cowboy',pal:{h:'#6a4426',H:'#8a5a34',s:'#e0a880',S:'#c08860',e:'#1a1010',m:'#a85a4a',r:'#e09880',k:'#d8c8a8',K:'#8a5a2a',g:'#c8343c',c:'#3a5a8a',C:'#2e4a74',p:'#4a6a9a',b:'#5a3a1a',B:'#c8a040'},o:{short:1,hat:'cowboy',vest:1},lines:['YIHAA!',"c'est le western !","Let's have a whiskey!","Let's dance at the Ranch!",'Howdy partner!','Giddy up!',"This town ain't big enough for the two of us",'Saddle up, cowgirl!']},
  {name:'Bouh',pal:{h:'#e8c060',H:'#f4d880',s:'#f4cca8',S:'#dcac88',e:'#2a1a10',m:'#3a1a1a',r:'#f4a0a0',k:'#f08ab0',K:'#d06890',g:'#ffffff',c:'#f08ab0',C:'#d06890',p:'#f4a0c0',b:'#c03060',B:'#d06890'},o:{short:1,pigtails:1,skip:[12,16]},lines:['euh :o','oh :o',"j'ai peur"]},
  {name:'Danny',pal:{h:'#1a1414',H:'#342828',s:'#d8a682',S:'#bc8862',e:'#1a1010',m:'#b05a5a',r:'#e09888',k:'#3a6ab0',K:'#2a5090',g:'#3a6ab0',c:'#2a3550',C:'#202a40',p:'#34405e',b:'#f0f0f0',B:'#2a5090'},o:{short:1},lines:[]}];
-const VSPR=VIS.map(v=>npcSprite(v.pal,v.o));
+VIS.push({name:'Kéké',custom:1,o:{},lines:[]});
+function kekeSprite(){const rows=[
+"....FffffF....",
+"...ffffffff...",
+"..EffeffeffE..",
+"..EffffffffE..",
+"..EfffnnfffE..",
+"..E.ffttff.E..",
+"....ffffff....",
+"...ssssssss...",
+"..sssssssssk..",
+"..sssssssskk..",
+".fssssskksssf.",
+".fggggkksssf..",
+"..gGoGggsss...",
+"..gGGGggss....",
+"...gggg.ss....",
+"....ff..ff....",
+"....ff..ff....",
+"....FF..FF....",
+"...FFF..FFF..."];
+  const C={f:'#c8955a',F:'#9a6a3a',E:'#6a4424',e:'#1a1010',n:'#1a1010',t:'#e86a8a',s:'#3a8ad0',k:'#5a3a20',g:'#e89a3a',G:'#b86a20',o:'#2a1a10'};
+  return mk(14,28,(x,P)=>rows.forEach((r,y)=>[...r].forEach((c,X)=>{if(c!=='.')P(X,y+7,C[c]);})));}
+const VSPR=VIS.map(v=>v.custom?kekeSprite():npcSprite(v.pal,v.o));
+// Kéké's own song (original): C G Am F, 100 bpm
+const KM=[[76,79,79,81,79,76,null,null],[74,74,76,74,71,null,67,null],[72,76,81,79,76,72,74,76],[77,76,74,72,74,null,72,null]];
+const KL=['♪ Ké-ké, Ké-ké ♪','♪ le chien qui chante ♪','♪ ouaf ouaf pour Juju ♪','♪ la la la la ♪'];
 const VS={st:'wait',t:25,order:[],i:0,x:0,y:0,z:0,f:1,moving:false,line:'',lineT:0,talkT:1,sub:'run',subT:0,tx:0,ty:0,step:0,shootT:3,billT:0,gunT:0,bag:false,bx:0,by:0};
 
 /* ---------- ground tiles ---------- */
@@ -503,11 +529,19 @@ function renderQuests(){let h='',act=0;
   document.getElementById('qn').textContent=Q.st.filter(v=>v===2).length+' / '+QUESTS.length;
   if(h!==qHtml){qHtml=h;document.getElementById('qlist').innerHTML=h;}}
 function vPuff(x,y){const sx=(x-y)*16,sy=(x+y)*8-getT(Math.round(x),Math.round(y)).h*HZ;for(let i=0;i<16;i++)parts.push({x:sx+(Math.random()-.5)*10,y:sy-8+(Math.random()-.5)*14,vx:(Math.random()-.5)*30,vy:-10-Math.random()*20,life:.8,max:.8,col:'rgba(255,255,255,.9)',k:'spark'});}
-function vSay(txt){VS.line=txt;VS.lineT=2.8;if(AC&&!muted)for(let i=0;i<3;i++)voice(master,'square',480+Math.random()*260+VS.i*70,AC.currentTime+i*.07,.003,.012,.05);}
-function nextVisitor(){if(!VS.order.length){const a=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}VS.order=a.concat(4);}
+function singNote(m,t,d){const f=mtof(m),o=AC.createOscillator(),o2=AC.createOscillator(),gn=AC.createGain(),fl=AC.createBiquadFilter(),g2=AC.createGain(),l=AC.createOscillator(),lg=AC.createGain();
+  o.type='triangle';o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;l.frequency.value=5.5;lg.gain.value=f*.012;l.connect(lg);lg.connect(o.frequency);
+  fl.type='lowpass';fl.frequency.value=2200;g2.gain.value=.25;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.075,t+.04);gn.gain.setValueAtTime(.075,t+d*.7);gn.gain.linearRampToValueAtTime(0,t+d);
+  o.connect(fl);o2.connect(g2);g2.connect(fl);fl.connect(gn);gn.connect(ukeBus);[o,o2,l].forEach(x=>{x.start(t);x.stop(t+d+.05);});}
+function kekeBar(t,b){const C=[[60,64,67],[55,59,62,67],[57,60,64],[53,57,60,65]][b%4],M=KM[b%4],e=60/100/2;
+  [0,3,4,6].forEach((q,j)=>C.forEach((m,k)=>play('uke',ukeBus,m,t+q*e+k*.022)));
+  play('guitar',ukeBus,C[0]-12,t);play('guitar',ukeBus,C[0]-12,t+4*e);
+  M.forEach((m,q)=>{if(m)singNote(m,t+q*e,e*(M[q+1]===null?1.8:.9));});}
+function vSay(txt,quiet){VS.line=txt;VS.lineT=2.8;if(!quiet&&AC&&!muted)for(let i=0;i<3;i++)voice(master,'square',480+Math.random()*260+VS.i*70,AC.currentTime+i*.07,.003,.012,.05);}
+function nextVisitor(){if(!VS.order.length){const a=[0,1,2,3,5];for(let i=4;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}VS.order=a.concat(4);}
   VS.i=VS.order.shift();const a=Math.random()*6.28,r=VS.i===0?6:4.5;VS.x=P.x+Math.cos(a)*r;VS.y=P.y+Math.sin(a)*r;VS.z=getT(Math.round(VS.x),Math.round(VS.y)).h*HZ;
-  VS.st='here';VS.t=55+Math.random()*12;VS.step=0;VS.talkT=1;VS.sub='run';VS.subT=4+Math.random()*2;VS.tx=VS.x;VS.ty=VS.y;VS.shootT=3;VS.line='';vPuff(VS.x,VS.y);}
-function leaveVisitor(){vPuff(VS.x,VS.y);VS.st='wait';VS.t=80+Math.random()*25;VS.line='';
+  VS.st='here';VS.play=false;VS.t=55+Math.random()*12;VS.step=0;VS.talkT=1;VS.sub='run';VS.subT=4+Math.random()*2;VS.tx=VS.x;VS.ty=VS.y;VS.shootT=3;VS.line='';vPuff(VS.x,VS.y);}
+function leaveVisitor(){VS.play=false;vPuff(VS.x,VS.y);VS.st='wait';VS.t=80+Math.random()*25;VS.line='';
   if(VS.bag){VS.bag=false;off.delete('backpack');saveGifts();toast('Danny gave your bag back 🎒');}}
 function vShoot(){vSay('pew pew pew');VS.gunT=1.4;for(let i=0;i<3;i++)setTimeout(()=>{if(VS.st!=='here'||VS.i!==2)return;const sx=(VS.x-VS.y)*16+VS.f*9,sy=(VS.x+VS.y)*8-VS.z-11;
   parts.push({x:sx,y:sy,vx:0,vy:0,life:.12,max:.12,col:'#ffe27a',k:'spark'});parts.push({x:sx,y:sy,vx:VS.f*240,vy:(Math.random()-.5)*10,life:.45,max:.45,col:'#fff2a0',k:'bullet'});
@@ -540,6 +574,14 @@ function updVisitor(dt){if(!started)return;VS.t-=dt;VS.lineT-=dt;VS.gunT-=dt;
   else if(VS.i===3){ // Bouh: scared, slowly backs away from Juju
     if(dist<6){mx=-dx;my=-dy;sp=.45;}
     if(VS.talkT<=0){vSay(pick(v.lines,Math.random()));VS.talkT=(dist<5?2.5:5)+Math.random()*2;}}
+  else if(VS.i===5){ // Kéké: walks up to Juju and sings his song
+    if(dist>3.2&&!VS.play){mx=dx;my=dy;sp=1.6;}
+    else{VS.f=dx-dy>0?1:-1;
+      if(!VS.play){VS.play=true;VS.bar=0;VS.barT=AC?AC.currentTime+.3:0;VS.talkT=0;}
+      if(AC&&!muted){while(VS.barT<AC.currentTime+.4){kekeBar(VS.barT,VS.bar);const b=VS.bar,dl=(VS.barT-AC.currentTime)*1000;
+          setTimeout(()=>{if(VS.st==='here'&&VS.i===5)vSay(KL[b%4],true);},Math.max(0,dl));VS.bar++;VS.barT+=60/100*4;}}
+      else if(VS.talkT<=0){vSay(KL[(VS.bar++)%4],true);VS.talkT=2.4;VS.barT=AC?AC.currentTime+.3:0;}
+      if(Math.random()<dt*3){const sx2=(VS.x-VS.y)*16,sy2=(VS.x+VS.y)*8-VS.z-18;parts.push({x:sx2+(Math.random()-.5)*8,y:sy2,vx:(Math.random()-.5)*14,vy:-14-Math.random()*8,life:2,max:2,col:pick(['#ffd76a','#ff9ab8','#9ad4ff','#b8f08a'],Math.random()),k:'note'});}}}
   else{ // Danny: comes to Juju, then talks, gives a treat, asks for the bag, kisses
     if(dist>1.6){mx=dx;my=dy;sp=2.2;}
     else if(VS.talkT<=0){const S=["désolé j'étais en retard",'tiens mange','donne ton sac','donne ton sac','donne ton sac','donne ton sac'];
@@ -557,7 +599,7 @@ function drawVisitor(ox,oy){const v=VIS[VS.i],spr=VSPR[VS.i],sx=Math.round((VS.x
   const wet=getT(Math.round(VS.x),Math.round(VS.y)).water&&alt<4&&sink<2,sh=sink>0?Math.max(0,28-sink):(wet?20:28),drop=v.o.skip?v.o.skip.length:0;
   if(alt>4){g.fillStyle='rgba(25,40,25,.22)';g.fillRect(sx-3,sy-1,7,2);}else{g.fillStyle='rgba(25,40,25,.3)';g.fillRect(sx-4,sy-1,9,3);}
   if(sink>2){g.fillStyle='#6a4a2c';g.fillRect(sx-5,sy-1,11,2);g.fillStyle='#8a6440';g.fillRect(sx-4,sy-2,9,1);}
-  const bob=VS.moving?(Math.sin(now*(VS.i===0?24:12))>0?-1:0):0,tr=VS.i===3&&Math.hypot(P.x-VS.x,P.y-VS.y)<4&&Math.sin(now*40)>0?1:0;
+  const bob=VS.moving?(Math.sin(now*(VS.i===0?24:12))>0?-1:0):VS.i===5&&VS.play?(Math.sin(now*8.4)>0?-1:0):0,tr=VS.i===3&&Math.hypot(P.x-VS.x,P.y-VS.y)<4&&Math.sin(now*40)>0?1:0;
   const y0=sy-26+bob+drop+(wet?6:0)-alt+sink;
   g.save();if(VS.f<0){g.translate(sx+7+tr,0);g.scale(-1,1);g.drawImage(spr,0,0,14,sh,0,y0,14,sh);}else g.drawImage(spr,0,0,14,sh,sx-7+tr,y0,14,sh);g.restore();
   if(VS.i===2&&VS.gunT>0){g.fillStyle='#2a2a30';g.fillRect(VS.f>0?sx+6:sx-10,y0+17,4,2);g.fillRect(VS.f>0?sx+6:sx-7,y0+19,1,1);}
@@ -842,6 +884,7 @@ function draw(){
     else if(p.k==='bub'){g.fillRect(x-1,y,1,2);g.fillRect(x+2,y,1,2);g.fillRect(x,y-1,2,1);g.fillRect(x,y+2,2,1);}
     else if(p.k==='ring'){const r=(1-p.life/p.max)*12+2;for(let a=0;a<6.28;a+=.35)g.fillRect(Math.round(x+Math.cos(a)*r),Math.round(y+Math.sin(a)*r*.45),1,1);}
     else if(p.k==='bill'){g.fillStyle='#3e8a44';g.fillRect(x-2,y,5,2);g.fillStyle='#9ad48a';g.fillRect(x-1,y,3,1);}
+    else if(p.k==='note'){g.fillRect(x,y-3,1,4);g.fillRect(x-2,y,2,2);g.fillRect(x+1,y-3,2,1);}
     else if(p.k==='bullet'){g.fillRect(x-1,y,3,1);}
     else if(p.k==='glint'){g.fillRect(x-1,y,3,1);}
     else if(p.k==='spark'){g.fillRect(x,y,1,1);if(p.life>p.max*.5){g.fillRect(x-1,y,3,1);g.fillRect(x,y-1,1,3);}}
@@ -879,7 +922,7 @@ function initAudio(){
 function bed(bus,type,fr,q,gain,lr,ld){const s=AC.createBufferSource();s.buffer=noiseBuf;s.loop=true;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=fr;f.Q.value=q;
   const gn=AC.createGain();gn.gain.value=gain;const l=AC.createOscillator();l.frequency.value=lr;const lg=AC.createGain();lg.gain.value=ld;l.connect(lg);lg.connect(gn.gain);
   s.connect(f);f.connect(gn);gn.connect(bus);s.start();l.start();}
-function setBusGains(){if(!AC)return;const tg=wts.target||wts;buses.forEach((b,i)=>b.gain.setTargetAtTime(Math.pow(tg[i],1.7),AC.currentTime,.9));}
+function setBusGains(){if(!AC)return;const tg=wts.target||wts;const dk=VS.st==='here'&&VS.i===5&&VS.play?.3:1;buses.forEach((b,i)=>b.gain.setTargetAtTime(Math.pow(tg[i],1.7)*dk,AC.currentTime,.9));}
 function toggleNight(){night=!night;try{localStorage.setItem('juju_night',night?'1':'0');}catch(e){}updNightBtn();toast(night?'🌙 Night':'☀ Day');}
 function updNightBtn(){const t=night?'☀ day':'🌙 night';document.getElementById('nightB').innerHTML='<b class="kc">N</b> '+t;const nb=document.getElementById('bNight');if(nb)nb.textContent=night?'☀':'🌙';}
 function toggleMute(){muted=!muted;document.getElementById('mute').innerHTML='<b class="kc">M</b> '+(muted?'♪ off':'♪ on');if(AC)master.gain.setTargetAtTime(muted?0:.8,AC.currentTime,.3);}
