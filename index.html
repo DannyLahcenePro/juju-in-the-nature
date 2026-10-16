@@ -567,7 +567,8 @@ function updVisitor(dt){if(!started)return;VS.t-=dt;VS.lineT-=dt;VS.gunT-=dt;
   if(VS.st==='wait'){if(VS.t<=0)nextVisitor();return;}
   if(VS.t<=0){leaveVisitor();return;}
   const dx=P.x-VS.x,dy=P.y-VS.y,dist=Math.hypot(dx,dy),v=VIS[VS.i];
-  if(dist>12&&!(VS.i===0&&VS.sub==='gone')){leaveVisitor();return;} // Juju walked away: the guest goes homelet mx=0,my=0,sp=0;VS.talkT-=dt;
+  if(dist>12&&!(VS.i===0&&VS.sub==='gone')){leaveVisitor();return;} // Juju walked away: the guest goes home
+  let mx=0,my=0,sp=0;VS.talkT-=dt;
   if(VS.i===0){ // Tigidi: runs around at a distance, vanishes, pops up somewhere else
     VS.subT-=dt;
     if(VS.sub==='run'){const a=Math.atan2(VS.y-P.y,VS.x-P.x)+.45;VS.tx=P.x+Math.cos(a)*5;VS.ty=P.y+Math.sin(a)*5;mx=VS.tx-VS.x;my=VS.ty-VS.y;sp=VS.mode==='fly'?1.1:2;
