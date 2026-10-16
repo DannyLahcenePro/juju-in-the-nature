@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Juju in the Nature</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#cfe3dc;font-family:'Pixelify Sans',monospace;user-select:none;-webkit-user-select:none}
@@ -14,6 +14,21 @@
   #start p{margin:0;font-size:clamp(14px,2.2vw,22px);opacity:.95;text-align:center;line-height:1.5}
   #start .go{margin-top:18px;padding:10px 26px;border:3px solid #fff;border-radius:6px;font-size:22px;animation:pulse 2s infinite}
   @keyframes pulse{50%{transform:scale(1.06)}}
+  /* touch controls: joystick bottom-left, buttons bottom-right; only on touch screens */
+  #pad{position:fixed;left:0;right:0;bottom:0;z-index:3;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-end;
+    padding:0 max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));-webkit-user-select:none;user-select:none}
+  #stick{pointer-events:auto;touch-action:none;position:relative;width:124px;height:124px;border-radius:50%;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.5)}
+  #knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(255,255,255,.6);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  #btns{pointer-events:auto;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  #btns .row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;max-width:62vw}
+  #btns button{font:inherit;font-size:15px;color:#fff;min-width:58px;height:46px;padding:0 12px;border-radius:23px;border:2px solid rgba(255,255,255,.55);background:rgba(30,40,36,.32);touch-action:none;-webkit-tap-highlight-color:transparent}
+  #btns button.big{width:76px;height:76px;border-radius:50%;font-size:16px}
+  #btns button.on{background:rgba(255,226,122,.55);color:#2a2010}
+  #btns button:active{transform:scale(.94)}
+  body.touch #hud{top:calc(8px + env(safe-area-inset-top, 0px));bottom:auto;font-size:12px}
+  body.touch #hud>span:first-child>span:first-child,body.touch #keys{display:none}
+  body.touch #toast{top:calc(48px + env(safe-area-inset-top, 0px))}
+  body.touch #hint{bottom:calc(170px + env(safe-area-inset-bottom, 0px))}
   #toast{position:fixed;top:7%;left:0;right:0;text-align:center;color:#fff;font-size:clamp(22px,4vw,44px);text-shadow:0 2px 0 #2a3a30,0 0 14px rgba(0,0,0,.4);opacity:0;transition:opacity 1.5s;pointer-events:none}
   #hud{position:fixed;bottom:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;color:#fff;font-size:14px;text-shadow:0 1px 1px rgba(0,0,0,.6);pointer-events:none}
   #hud>span{background:rgba(30,40,36,.28);border-radius:6px;padding:2px 8px}
@@ -32,7 +47,7 @@
   #view.on canvas{transform:scale(1)}
   #view p{margin:0;color:#fff;font-size:clamp(16px,2.4vw,26px);text-shadow:0 2px 0 #000;text-align:center}
   #view small{color:#ddd;font-size:14px}
-  #col{position:fixed;inset:0;background:rgba(18,22,20,.9);opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;padding:20px 16px;box-sizing:border-box;color:#fff}
+  #col{position:fixed;inset:0;z-index:4;background:rgba(18,22,20,.9);opacity:0;pointer-events:none;transition:opacity .5s;overflow-y:auto;padding:20px 16px;box-sizing:border-box;color:#fff}
   #col.on{opacity:1;pointer-events:auto}
   #col h2{margin:4px 0 4px;text-align:center;font-size:clamp(22px,4vw,38px);text-shadow:0 2px 0 #000}
   #col .sub{text-align:center;opacity:.8;margin-bottom:16px}
@@ -55,7 +70,13 @@
 <div id="hint">★ press E (or click) on the sign the sign to enjoy the view</div>
 <div id="view"><canvas id="vc" width="192" height="108"></canvas><p id="vcap"></p><small>click or press Esc to keep walking</small></div>
 <div id="col"><h2>Collection</h2><div class="sub" id="colsub"></div><div id="grid"></div><h2 style="margin-top:26px">Gifts</h2><div class="sub" id="gsub"></div><div id="ggrid"></div><div class="sub" style="margin-top:16px">C or Esc to close</div></div>
-<div id="hud"><span>WASD / ZQSD / arrows / hold mouse to walk · Shift run · Space jump &nbsp;·&nbsp; <span id="cnt">viewspots found: 0/24</span> &nbsp;·&nbsp; C : collection</span><span id="keys"></span><span id="mute">♪ M : sound on</span></div>
+<div id="pad" hidden><div id="stick"><div id="knob"></div></div>
+  <div id="btns">
+    <div class="row"><button type="button" data-k="b" data-g="dog" hidden>Waf</button><button type="button" data-k="h" data-g="choco" hidden>Choco</button><button type="button" data-k="p" data-g="camera" hidden>Photo</button><button type="button" data-k="u" data-g="uke" hidden>Uke</button></div>
+    <div class="row"><button type="button" data-k="c">Collection</button><button type="button" id="bView" data-k="e" hidden>★ View</button></div>
+    <div class="row"><button type="button" id="bRun">Run</button><button type="button" class="big" data-k=" ">Jump</button></div>
+  </div></div>
+<div id="hud"><span><span>WASD / ZQSD / arrows / hold mouse to walk · Shift run · Space jump &nbsp;·&nbsp; </span><span id="cnt">viewspots found: 0/24</span> &nbsp;·&nbsp; C : collection</span><span id="keys"></span><span id="mute">♪ M : sound on</span></div>
 <div id="start">
   <h1>Juju in the Nature</h1>
   <p>Walk, and the world grows around you.<br>↑ forest &nbsp;·&nbsp; → meadow &nbsp;·&nbsp; ↓ lake &nbsp;·&nbsp; ← sakura</p>
@@ -65,6 +86,20 @@
 'use strict';
 const cv=document.getElementById('c'),g=cv.getContext('2d');
 let W=480,H=270,PX=4;
+/* ---------- touch controls ---------- */
+const isTouch=matchMedia('(pointer: coarse)').matches||'ontouchstart' in window;const joy={on:false,x:0,y:0,id:null};
+function initTouch(){if(!isTouch)return;document.body.classList.add('touch');document.getElementById('pad').hidden=false;
+  const st=document.getElementById('stick'),kn=document.getElementById('knob');
+  const mv=e=>{const r=st.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,R=r.width/2;let x=e.clientX-cx,y=e.clientY-cy;const l=Math.hypot(x,y);if(l>R){x*=R/l;y*=R/l;}
+    joy.x=x/R;joy.y=y/R;kn.style.transform='translate('+x+'px,'+y+'px)';};
+  st.addEventListener('pointerdown',e=>{if(!started)start();joy.on=true;joy.id=e.pointerId;st.setPointerCapture(e.pointerId);mv(e);e.preventDefault();});
+  st.addEventListener('pointermove',e=>{if(joy.on&&e.pointerId===joy.id)mv(e);});
+  const end=e=>{if(e.pointerId!==joy.id)return;joy.on=false;joy.x=joy.y=0;kn.style.transform='';};
+  st.addEventListener('pointerup',end);st.addEventListener('pointercancel',end);
+  document.querySelectorAll('#btns [data-k]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const k=b.dataset.k;
+    dispatchEvent(new KeyboardEvent('keydown',{key:k}));dispatchEvent(new KeyboardEvent('keyup',{key:k}));}));
+  const run=document.getElementById('bRun');run.addEventListener('pointerdown',e=>{e.preventDefault();keys.shift=!keys.shift;run.classList.toggle('on',keys.shift);});
+  document.getElementById('hint').textContent='★ tap View to enjoy the landscape';}
 function resize(){PX=Math.max(2,Math.round(Math.min(innerWidth/420,innerHeight/250)));W=Math.ceil(innerWidth/PX);H=Math.ceil(innerHeight/PX);cv.width=W;cv.height=H;g.imageSmoothingEnabled=false;}
 addEventListener('resize',resize);resize();
 
@@ -337,7 +372,7 @@ function collectGift(t){t.o=null;t.gift=0;const miss=GIFTS.filter(G=>!gifts.has(
   toast('🎁 '+G.name+' ! ('+gifts.size+'/'+GIFTS.length+')');
   for(let i=0;i<24;i++)parts.push({x:cam.x+(Math.random()-.5)*20,y:cam.y-10+(Math.random()-.5)*14,vx:(Math.random()-.5)*40,vy:-20-Math.random()*30,life:1.4,max:1.4,col:pick(['#ffe27a','#ff9ab8','#fff'],Math.random()),k:'spark'});
   if(AC&&!muted){const tt=AC.currentTime;[72,76,79,84,88].forEach((m,i)=>play('bell',buses[1],m,tt+i*.09));}}
-function updHud(){const k=[];if(has('choco'))k.push('H : chocolate');if(has('camera'))k.push('P : photo');if(has('uke'))k.push('U : ukulele');if(has('dog'))k.push('B : waf');
+function updHud(){document.querySelectorAll('#btns [data-g]').forEach(b=>b.hidden=!has(b.dataset.g));const k=[];if(has('choco'))k.push('H : chocolate');if(has('camera'))k.push('P : photo');if(has('uke'))k.push('U : ukulele');if(has('dog'))k.push('B : waf');
   document.getElementById('keys').textContent=k.join('  ·  ');}
 function useKey(k){
   if(k==='h'&&has('choco')){toast('Yum! 🍫');for(let i=0;i<10;i++)parts.push({x:cam.x+(Math.random()-.5)*16,y:cam.y-14,vx:(Math.random()-.5)*16,vy:-18-Math.random()*12,life:1.6,max:1.6,col:'#ff5a7a',k:'heart'});}
@@ -374,7 +409,7 @@ cv.addEventListener('pointerdown',e=>{const mx=e.clientX/PX,my=e.clientY/PX;
   ptr.down=true;ptr.x=mx;ptr.y=my;});
 addEventListener('pointermove',e=>{ptr.x=e.clientX/PX;ptr.y=e.clientY/PX;});
 addEventListener('pointerup',()=>ptr.down=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false;ptr.down=false;});
-document.getElementById('start').addEventListener('click',start);setTimeout(()=>{updCnt();updHud();},0);
+document.getElementById('start').addEventListener('click',start);setTimeout(()=>{initTouch();updCnt();updHud();},0);
 document.getElementById('mute').addEventListener('click',toggleMute);
 function start(){if(started)return;started=true;const s=document.getElementById('start');s.style.opacity=0;setTimeout(()=>s.remove(),1300);initAudio();}
 
@@ -387,6 +422,7 @@ function update(dt){
   if(keys.w||keys.z||keys.arrowup)dY-=1;if(keys.s||keys.arrowdown)dY+=1;
   if(keys.a||keys.q||keys.arrowleft)dX-=1;if(keys.d||keys.arrowright)dX+=1;
   const psx=(P.x-P.y)*16,psy=(P.x+P.y)*8;
+  if(joy.on&&started&&(Math.abs(joy.x)>.15||Math.abs(joy.y)>.15)){dX=joy.x;dY=joy.y;}
   if(ptr.down&&started){const vx=ptr.x-(psx-cam.x+W/2),vy=ptr.y-(psy-cam.y+H/2-10);if(Math.hypot(vx,vy)>5){dX=vx;dY=vy;}}
   P.moving=false;
   if(viewing||colOpen){dX=dY=0;}
@@ -417,7 +453,7 @@ function update(dt){
   // nearby viewspot
   nearSpot=null;let bd=1.8;
   for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const t=T.get(K(px+dx,py+dy));if(t&&t.spot&&t.rev&&t.rev<now){const dd=Math.hypot(t.x-P.x,t.y-P.y);if(dd<bd){bd=dd;nearSpot=t;}}}
-  document.getElementById('hint').style.opacity=nearSpot&&!viewing?1:0;
+  document.getElementById('hint').style.opacity=nearSpot&&!viewing&&!isTouch?1:0;if(isTouch)document.getElementById('bView').hidden=!nearSpot;
 
   // biome weights
   wTimer-=dt;if(wTimer<=0){wTimer=.3;const cnt=[0,0,0,0,0,0,0,0];let n=0,home=0;
